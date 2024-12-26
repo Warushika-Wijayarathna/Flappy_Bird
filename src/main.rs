@@ -13,6 +13,7 @@ fn main() {
                     }),
                     ..Default::default()
                 })
+                .set(ImagePlugin::default_nearest())
         )
         .run();
 }
