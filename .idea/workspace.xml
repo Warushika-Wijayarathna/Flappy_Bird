@@ -8,6 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1bbf4512-2f0b-4a1a-a94a-f16ab232f6cf" name="Changes" comment="Restarted-obstacle coding-still...">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -78,7 +79,7 @@
       <option name="presentableId" value="Default" />
       <updated>1735215154006</updated>
       <workItem from="1735215155113" duration="1000" />
-      <workItem from="1736959857173" duration="5696000" />
+      <workItem from="1736959857173" duration="6768000" />
     </task>
     <task id="LOCAL-00001" summary="Restarted-obstacle coding">
       <option name="closed" value="true" />
@@ -104,7 +105,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736965177594</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Restarted-obstacle coding-still...">
+      <option name="closed" value="true" />
+      <created>1736965825851</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1736965825851</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

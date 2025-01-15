@@ -97,7 +97,7 @@ fn setup_level(
 
 #[derive(Component)]
 pub struct Obstacle{
-    pub pipe_direction : f32,
+    pub direction : f32,
 }
 
 fn update_obstacles(
@@ -115,7 +115,7 @@ fn update_obstacles(
         {
             transform.translation.x += OBSTACLE_AMOUNT as f32 * OBSTACLE_SPACING * PIXEL_RATIO;
             transform.translation.y =
-                get_centered_pipe_position() * obstacle.pipe_direction + y_offset;
+                get_centered_pipe_position() * obstacle.direction + y_offset;
         }
     }
 }
@@ -164,7 +164,7 @@ fn spawn_obstacle(
             PIXEL_RATIO * pipe_direction,
             PIXEL_RATIO,
         )),
-        obstacle: Obstacle { pipe_direction: pipe_direction },
+        obstacle: Obstacle { direction: pipe_direction },
     });
 
 }
