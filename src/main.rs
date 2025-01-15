@@ -33,7 +33,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
         )
         .add_systems(Startup, setup_level)
-        .add_systems(Update, update_bird, update_obstacles)
+        .add_systems(Update, (update_bird, update_obstacles))
         .run();
 }
 
@@ -97,7 +97,7 @@ fn setup_level(
 
 #[derive(Component)]
 pub struct Obstacle{
-    pub direction : f32,
+    pub pipe_direction : f32,
 }
 
 fn update_obstacles(
@@ -156,7 +156,7 @@ fn spawn_obstacle(
 ) {
     commands.spawn(ObstacleBundle{
         sprite:Sprite {
-        image: pipe_image,
+        image: pipe_image.clone(),
         ..Default::default()
     },
         transform: Transform::from_translation(translation).with_scale(Vec3::new(
@@ -164,7 +164,7 @@ fn spawn_obstacle(
             PIXEL_RATIO * pipe_direction,
             PIXEL_RATIO,
         )),
-        obstacle: Obstacle { direction: pipe_direction },
+        obstacle: Obstacle { pipe_direction: pipe_direction },
     });
 
 }
@@ -227,6 +227,5 @@ fn update_bird(
                 &game_manager.pipe_image,
             );
         }
-    }
     }
 }
