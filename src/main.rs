@@ -1,4 +1,6 @@
+use bevy::log::tracing_subscriber::fmt::time;
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use rand::prelude::ThreadRng;
 use rand::{Rng, thread_rng};
 
@@ -31,7 +33,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
         )
         .add_systems(Startup, setup_level)
-        .add_systems(Update, update_bird)
+        .add_systems(Update, update_bird, update_obstacles)
         .run();
 }
 
@@ -49,16 +51,30 @@ const OBSTACLE_HEIGHT : f32 = 144.;
 const OBSTACLE_VERTICAL_OFFSET : f32 = 30.;
 const OBSTACLE_GAP_SIZE : f32 = 15.;
 const OBSTACLE_SPACING : f32 = 60.;
+const OBSTACLE_SCROLL_SPEED: f32 = 150.;
 
-
+#[derive(Resource)]
+pub struct GameManager {
+    pub pipe_image: Handle<Image>,
+    pub window_dimensions: Vec2,
+}
 #[derive(Component)]
 struct Bird{
     pub velocity : f32,
 }
+
+
 fn setup_level(
     mut commands : Commands,
     asset_server : Res<AssetServer>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ){
+    let pipe_image = asset_server.load("pipe.png");
+    let window = window_query.get_single().unwrap();
+    commands.insert_resource(GameManager{
+        pipe_image: pipe_image.clone(),
+        window_dimensions : Vec2::new(window.width(), window.height()),
+    });
     commands.insert_resource(ClearColor(Color::srgb(0.5,0.7,0.8)));
     commands.spawn(Camera2d::default());
     commands.spawn(BirdBundle {
@@ -71,7 +87,12 @@ fn setup_level(
     });
 
     let mut rand = thread_rng();
-
+    spawn_obstacles(
+        &mut commands,
+        &mut rand,
+        window.width(),
+        &pipe_image
+    );
 }
 
 #[derive(Component)]
@@ -79,6 +100,25 @@ pub struct Obstacle{
     pub direction : f32,
 }
 
+fn update_obstacles(
+    time : Res<Time>,
+    game_manager : Res<GameManager>,
+    mut obstacle_query : Query<(&mut Obstacle, &mut Transform)>,
+){
+    let mut rand = thread_rng();
+    let y_offset = generate_offset(&mut rand);
+    for (obstacle, mut transform) in obstacle_query.iter_mut() {
+        transform.translation.x -= time.delta_secs() * OBSTACLE_SCROLL_SPEED;
+
+        if transform.translation.x + OBSTACLE_WIDTH * PIXEL_RATIO / 2.
+            < -game_manager.window_dimensions.x / 2.
+        {
+            transform.translation.x += OBSTACLE_AMOUNT as f32 * OBSTACLE_SPACING * PIXEL_RATIO;
+            transform.translation.y =
+                get_centered_pipe_position() * obstacle.pipe_direction + y_offset;
+        }
+    }
+}
 fn get_centered_pipe_position() -> f32 {
     return (OBSTACLE_HEIGHT/2.+OBSTACLE_GAP_SIZE/2.)*PIXEL_RATIO;
 }
@@ -112,11 +152,11 @@ fn spawn_obstacle(
     //bottom or top of screen
     pipe_direction: f32,
     commands: &mut Commands,
-    pipe_image: Handle<Image>,
+    pipe_image: &Handle<Image>,
 ) {
-    commands.spawn(SpriteBundle{
+    commands.spawn(ObstacleBundle{
         sprite:Sprite {
-        image: pipe_image.clone(),
+        image: pipe_image,
         ..Default::default()
     },
         transform: Transform::from_translation(translation).with_scale(Vec3::new(
@@ -125,7 +165,6 @@ fn spawn_obstacle(
             PIXEL_RATIO,
         )),
         obstacle: Obstacle { direction: pipe_direction },
-
     });
 
 }
@@ -134,9 +173,12 @@ fn generate_offset(rand : &mut ThreadRng) -> f32 {
 }
 
 fn update_bird(
-    mut bird_query : Query<(&mut Bird, &mut Transform)>,
-    time : Res<Time>,
-    keys : Res<ButtonInput<KeyCode>>,
+    mut commands: Commands,
+    mut bird_query: Query<(&mut Bird, &mut Transform), Without<Obstacle>>,
+    mut obstacle_query: Query<(&Transform, Entity), With<Obstacle>>,
+    time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
+    game_manager: Res<GameManager>,
 ){
     if let Ok((mut bird, mut transform)) = bird_query.get_single_mut(){
         if keys.just_pressed(KeyCode::Space){
@@ -154,6 +196,37 @@ fn update_bird(
         transform.rotation = Quat::from_axis_angle(
             Vec3::Z,
             f32::clamp(bird.velocity / VELOCITY_TO_ROTATION_RATIO, -90., 90.).to_radians(),
-        )
+        );
+
+        let mut dead = false;
+        if transform.translation.y <= -game_manager.window_dimensions.y / 2. {
+            dead = true;
+        } else {
+            for (pipe_transform, _entity) in obstacle_query.iter() {
+                if (pipe_transform.translation.y - transform.translation.y).abs()
+                    < OBSTACLE_HEIGHT * PIXEL_RATIO / 2.
+                    && (pipe_transform.translation.x - transform.translation.x).abs()
+                    < OBSTACLE_WIDTH * PIXEL_RATIO / 2.
+                {
+                    dead = true;
+                    break;
+                }
+            }
+        }
+        if dead {
+            transform.translation = Vec3::ZERO;
+            bird.velocity = 0.;
+            for (_pipe_transform, entity) in obstacle_query.iter_mut() {
+                commands.entity(entity).despawn();
+            }
+            let mut rand = thread_rng();
+            spawn_obstacles(
+                &mut commands,
+                &mut rand,
+                game_manager.window_dimensions.x,
+                &game_manager.pipe_image,
+            );
+        }
+    }
     }
 }
