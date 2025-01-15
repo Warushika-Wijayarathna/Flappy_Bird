@@ -7,10 +7,7 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1bbf4512-2f0b-4a1a-a94a-f16ab232f6cf" name="Changes" comment="Restarted-obstacle coding-still...">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
-    </list>
+    <list default="true" id="1bbf4512-2f0b-4a1a-a94a-f16ab232f6cf" name="Changes" comment="Restarted-obstacle coding-still...done" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -79,7 +76,7 @@
       <option name="presentableId" value="Default" />
       <updated>1735215154006</updated>
       <workItem from="1735215155113" duration="1000" />
-      <workItem from="1736959857173" duration="6768000" />
+      <workItem from="1736959857173" duration="7108000" />
     </task>
     <task id="LOCAL-00001" summary="Restarted-obstacle coding">
       <option name="closed" value="true" />
@@ -113,7 +110,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736965825851</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Restarted-obstacle coding-still...done">
+      <option name="closed" value="true" />
+      <created>1736966965146</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1736966965146</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -124,6 +129,7 @@
     <MESSAGE value="Restarted-obstacle coding" />
     <MESSAGE value="Restarted-obstacle coding-still" />
     <MESSAGE value="Restarted-obstacle coding-still..." />
-    <option name="LAST_COMMIT_MESSAGE" value="Restarted-obstacle coding-still..." />
+    <MESSAGE value="Restarted-obstacle coding-still...done" />
+    <option name="LAST_COMMIT_MESSAGE" value="Restarted-obstacle coding-still...done" />
   </component>
 </project>
