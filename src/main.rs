@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::prelude::ThreadRng;
-use rand::Rng;
+use rand::{Rng, thread_rng};
 
 #[derive(Bundle)]
 struct BirdBundle {
@@ -9,6 +9,12 @@ struct BirdBundle {
     bird: Bird,
 }
 
+#[derive(Bundle)]
+struct ObstacleBundle {
+    sprite: Sprite,
+    transform: Transform,
+    obstacle: Obstacle,
+}
 fn main() {
     App::new()
         .add_plugins(
@@ -63,6 +69,9 @@ fn setup_level(
         transform: Transform::IDENTITY.with_scale(Vec3::splat(PIXEL_RATIO)),
         bird: Bird { velocity: 0. },
     });
+
+    let mut rand = thread_rng();
+
 }
 
 #[derive(Component)]
@@ -74,45 +83,53 @@ fn get_centered_pipe_position() -> f32 {
     return (OBSTACLE_HEIGHT/2.+OBSTACLE_GAP_SIZE/2.)*PIXEL_RATIO;
 }
 fn spawn_obstacles(
-    mut commands : &mut Commands,
-    mut rand : &mut ThreadRng,
-    window_width : f32,
-    pipe_image : Handle<Image>,
-){
+    commands: &mut Commands,
+    rand: &mut ThreadRng,
+    window_width: f32,
+    pipe_image: &Handle<Image>,
+) {
     for i in 0..OBSTACLE_AMOUNT {
         let y_offset = generate_offset(rand);
-        let x_offset = window_width/2.+(OBSTACLE_SPACING*PIXEL_RATIO*i as f32);
+        let x_pos = window_width / 2. + (OBSTACLE_SPACING * PIXEL_RATIO * i as f32);
         spawn_obstacle(
+            Vec3::X * x_pos + Vec3::Y * (get_centered_pipe_position() + y_offset),
+            1.,
+            commands,
+            pipe_image,
+        );
 
+        spawn_obstacle(
+            Vec3::X * x_pos + Vec3::Y * (-get_centered_pipe_position() + y_offset),
+            -1.,
+            commands,
+            pipe_image,
         );
     }
 }
 
 fn spawn_obstacle(
-    translation : Vec3,
-    pipe_direction : f32,
-    commands : &mut Commands,
-    pipe_image : Handle<Image>,
-){
-    commands.spawn((
-        Sprite{
-            image: pipe_image.clone(),
-            ..Default::default()
-        },
-        Transform::from_translation(translation).with_scale(Vec3::new(
+    translation: Vec3,
+    //bottom or top of screen
+    pipe_direction: f32,
+    commands: &mut Commands,
+    pipe_image: Handle<Image>,
+) {
+    commands.spawn(SpriteBundle{
+        sprite:Sprite {
+        image: pipe_image.clone(),
+        ..Default::default()
+    },
+        transform: Transform::from_translation(translation).with_scale(Vec3::new(
             PIXEL_RATIO,
-            PIXEL_RATIO * - pipe_direction,
+            PIXEL_RATIO * pipe_direction,
             PIXEL_RATIO,
-
         )),
-        Obstacle{
-            direction: pipe_direction,
-        },
-
+        obstacle: Obstacle { direction: pipe_direction },
 
     });
+
 }
-fn generate_offset(rand : &mut ThreadRng){
+fn generate_offset(rand : &mut ThreadRng) -> f32 {
     return rand.gen_range(-OBSTACLE_VERTICAL_OFFSET..OBSTACLE_VERTICAL_OFFSET)*PIXEL_RATIO;
 }
 
