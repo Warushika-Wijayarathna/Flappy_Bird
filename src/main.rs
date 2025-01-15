@@ -1,4 +1,13 @@
 use bevy::prelude::*;
+use rand::prelude::ThreadRng;
+use rand::Rng;
+
+#[derive(Bundle)]
+struct BirdBundle {
+    sprite: Sprite,
+    transform: Transform,
+    bird: Bird,
+}
 
 fn main() {
     App::new()
@@ -15,5 +24,119 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest())
         )
+        .add_systems(Startup, setup_level)
+        .add_systems(Update, update_bird)
         .run();
+}
+
+// Bird Component
+const PIXEL_RATIO : f32 = 4.0;
+
+const FLAP_FORCE : f32 = 500.;
+const GRAVITY : f32 = 2000.;
+const VELOCITY_TO_ROTATION_RATIO : f32 = 7.5;
+
+// Obstacle Component
+const OBSTACLE_AMOUNT : i32 = 5;
+const OBSTACLE_WIDTH : f32 = 32.;
+const OBSTACLE_HEIGHT : f32 = 144.;
+const OBSTACLE_VERTICAL_OFFSET : f32 = 30.;
+const OBSTACLE_GAP_SIZE : f32 = 15.;
+const OBSTACLE_SPACING : f32 = 60.;
+
+
+#[derive(Component)]
+struct Bird{
+    pub velocity : f32,
+}
+fn setup_level(
+    mut commands : Commands,
+    asset_server : Res<AssetServer>,
+){
+    commands.insert_resource(ClearColor(Color::srgb(0.5,0.7,0.8)));
+    commands.spawn(Camera2d::default());
+    commands.spawn(BirdBundle {
+        sprite: Sprite {
+            image: asset_server.load("bird.png"),
+            ..Default::default()
+        },
+        transform: Transform::IDENTITY.with_scale(Vec3::splat(PIXEL_RATIO)),
+        bird: Bird { velocity: 0. },
+    });
+}
+
+#[derive(Component)]
+pub struct Obstacle{
+    pub direction : f32,
+}
+
+fn get_centered_pipe_position() -> f32 {
+    return (OBSTACLE_HEIGHT/2.+OBSTACLE_GAP_SIZE/2.)*PIXEL_RATIO;
+}
+fn spawn_obstacles(
+    mut commands : &mut Commands,
+    mut rand : &mut ThreadRng,
+    window_width : f32,
+    pipe_image : Handle<Image>,
+){
+    for i in 0..OBSTACLE_AMOUNT {
+        let y_offset = generate_offset(rand);
+        let x_offset = window_width/2.+(OBSTACLE_SPACING*PIXEL_RATIO*i as f32);
+        spawn_obstacle(
+
+        );
+    }
+}
+
+fn spawn_obstacle(
+    translation : Vec3,
+    pipe_direction : f32,
+    commands : &mut Commands,
+    pipe_image : Handle<Image>,
+){
+    commands.spawn((
+        Sprite{
+            image: pipe_image.clone(),
+            ..Default::default()
+        },
+        Transform::from_translation(translation).with_scale(Vec3::new(
+            PIXEL_RATIO,
+            PIXEL_RATIO * - pipe_direction,
+            PIXEL_RATIO,
+
+        )),
+        Obstacle{
+            direction: pipe_direction,
+        },
+
+
+    });
+}
+fn generate_offset(rand : &mut ThreadRng){
+    return rand.gen_range(-OBSTACLE_VERTICAL_OFFSET..OBSTACLE_VERTICAL_OFFSET)*PIXEL_RATIO;
+}
+
+fn update_bird(
+    mut bird_query : Query<(&mut Bird, &mut Transform)>,
+    time : Res<Time>,
+    keys : Res<ButtonInput<KeyCode>>,
+){
+    if let Ok((mut bird, mut transform)) = bird_query.get_single_mut(){
+        if keys.just_pressed(KeyCode::Space){
+            bird.velocity = FLAP_FORCE;
+        }
+
+        bird.velocity -= time.delta_secs() * GRAVITY;
+        transform.translation.y += bird.velocity * time.delta_secs();
+
+        if transform.translation.y < -256.0{
+            transform.translation.y = -256.0;
+            bird.velocity = 0.0;
+        }
+
+        transform.rotation = Quat::from_axis_angle(
+            Vec3::Z,
+            f32::clamp(bird.velocity / VELOCITY_TO_ROTATION_RATIO, -90., 90.).to_radians(),
+        )
+    }
 }
